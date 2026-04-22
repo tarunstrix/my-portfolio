@@ -432,17 +432,30 @@ export default function Portfolio() {
             </div>
           </Reveal>
           <Reveal delay={0.1}>
-            <div style={{ background: "#fff", border: "1px solid #EDE8DF", borderRadius: 12, padding: 40, borderTop: `3px solid ${G}`, boxShadow: "0 8px 40px rgba(0,0,0,.07)" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
-                <input className="fi" placeholder="Your Name" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} />
-                <input className="fi" placeholder="Email Address" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} />
+            <form
+              name="contact"
+              method="POST"
+              data-netlify="true"
+            >
+              <input type="hidden" name="form-name" value="contact" />
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                <input name="name" className="fi" placeholder="Your Name" />
+                <input name="email" className="fi" placeholder="Email Address" />
               </div>
-              <input className="fi" placeholder="Project Budget (e.g. $500 – $2000)" value={form.budget} onChange={e => setForm(p => ({ ...p, budget: e.target.value }))} style={{ marginBottom: 14 }} />
-              <textarea className="fi" placeholder="Describe your project — goals, timeline, requirements..." value={form.msg} onChange={e => setForm(p => ({ ...p, msg: e.target.value }))} style={{ resize: "vertical", minHeight: 130, marginBottom: 20 }} />
-              <button className="btn" style={{ width: "100%", justifyContent: "center", letterSpacing: 2.5, fontSize: 12 }} onClick={submit}>
-                {sent ? "✅ Sent! I'll reply within 24 hours" : "Send Message →"}
+
+              <input name="budget" className="fi" placeholder="Project Budget (e.g. $500 – $2000)" />
+
+              <textarea
+                name="message"
+                className="fi"
+                placeholder="Describe your project — goals, timeline, requirements..."
+              />
+
+              <button type="submit" className="btn">
+                Send Message →
               </button>
-            </div>
+            </form>
           </Reveal>
         </div>
       </section>
