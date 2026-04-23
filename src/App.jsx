@@ -164,6 +164,15 @@ export default function Portfolio() {
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
 
+  // ─── EmailJS Config ───────────────────────────────────────────
+  // Public Key (from Account > API Keys):
+  const EJ_PUBLIC_KEY = "r93qqy4OYPQOpXYJy";
+  // Service ID  (from Email Services — looks like service_xxxxxxx):
+  const EJ_SERVICE_ID = "service_adg8nlr";
+  // Template ID (from Email Templates — looks like template_xxxxxxx):
+  const EJ_TEMPLATE_ID = "template_o23jplg";
+  // ──────────────────────────────────────────────────────────────
+
   const submit = async () => {
     if (!form.name || !form.email || !form.msg) {
       setSendError("Please fill in your name, email and message.");
@@ -173,20 +182,13 @@ export default function Portfolio() {
     setSending(true);
     setSendError("");
     try {
-      const subject = encodeURIComponent("Portfolio Enquiry from " + form.name);
-      const body = encodeURIComponent(
-        "Name: " + form.name + "\nEmail: " + form.email +
-        "\nBudget: " + (form.budget || "Not specified") +
-        "\n\nMessage:\n" + form.msg
-      );
-      // EmailJS API call
       const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          service_id: "service_gmail",
-          template_id: "template_contact",
-          user_id: "user_REPLACE_WITH_EMAILJS_KEY",
+          service_id: EJ_SERVICE_ID,
+          template_id: EJ_TEMPLATE_ID,
+          user_id: EJ_PUBLIC_KEY,
           template_params: {
             from_name: form.name,
             from_email: form.email,
@@ -196,21 +198,18 @@ export default function Portfolio() {
           }
         })
       });
-      setSent(true);
-      setForm({ name: "", email: "", budget: "", msg: "" });
-      setTimeout(() => setSent(false), 6000);
+      if (res.status === 200) {
+        setSent(true);
+        setForm({ name: "", email: "", budget: "", msg: "" });
+        setTimeout(() => setSent(false), 8000);
+      } else {
+        const txt = await res.text();
+        throw new Error(txt || "EmailJS error " + res.status);
+      }
     } catch (err) {
-      // Fallback: open mailto so message is never lost
-      const subject = encodeURIComponent("Portfolio Enquiry from " + form.name);
-      const body = encodeURIComponent(
-        "Name: " + form.name + "\nEmail: " + form.email +
-        "\nBudget: " + (form.budget || "Not specified") +
-        "\n\nMessage:\n" + form.msg
-      );
-      window.location.href = "mailto:tarunkumarz211286@gmail.com?subject=" + subject + "&body=" + body;
-      setSent(true);
-      setForm({ name: "", email: "", budget: "", msg: "" });
-      setTimeout(() => setSent(false), 6000);
+      console.error("EmailJS error:", err);
+      setSendError("Could not send automatically. Please email: tarunkumarz211286@gmail.com");
+      setTimeout(() => setSendError(""), 7000);
     }
     setSending(false);
   };
@@ -561,10 +560,31 @@ export default function Portfolio() {
               </div>
               <input className="fi" placeholder="Project type & budget (e.g. Webflow site, $1000)" value={form.budget} onChange={e => setForm(p => ({ ...p, budget: e.target.value }))} style={{ marginBottom: 12 }} />
               <textarea className="fi" placeholder="Describe your project — goals, timeline, requirements..." value={form.msg} onChange={e => setForm(p => ({ ...p, msg: e.target.value }))} style={{ resize: "vertical", minHeight: 110, marginBottom: 14 }} />
-              {sendError && <div style={{ color: "#E53E3E", fontSize: 13, fontWeight: 600, marginBottom: 10, padding: "10px 14px", background: "rgba(229,62,62,.08)", border: "1px solid rgba(229,62,62,.2)", borderRadius: 6 }}>{sendError}</div>}
-              <button className="btn" style={{ width: "100%", fontSize: 12, letterSpacing: 2, opacity: sending ? 0.7 : 1 }} onClick={submit} disabled={sending}>
-                {sending ? "⏳ Sending..." : sent ? "✅ Sent! I\'ll reply within 24 hours" : "Send Message →"}
+              {sendError && (
+                <div style={{ color: "#C53030", fontSize: 13, fontWeight: 600, marginBottom: 12, padding: "12px 16px", background: "rgba(197,48,48,.07)", border: "1px solid rgba(197,48,48,.2)", borderRadius: 8, display: "flex", alignItems: "center", gap: 8 }}>
+                  ⚠️ {sendError}
+                </div>
+              )}
+              {sent && (
+                <div style={{ marginBottom: 12, padding: "14px 16px", background: "rgba(34,197,94,.08)", border: "1px solid rgba(34,197,94,.25)", borderRadius: 8, display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 20 }}>✅</span>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#166534" }}>Message sent successfully!</div>
+                    <div style={{ fontSize: 12, color: "#4A7A5A", marginTop: 2 }}>I'll reply to {form.email || "your email"} within 24 hours.</div>
+                  </div>
+                </div>
+              )}
+              <button
+                className="btn"
+                style={{ width: "100%", fontSize: 12, letterSpacing: 2, opacity: sending ? 0.75 : 1, cursor: sending ? "not-allowed" : "pointer", transition: "all .3s" }}
+                onClick={submit}
+                disabled={sending || sent}
+              >
+                {sending ? "⏳ Sending your message..." : sent ? "✅ Message Sent!" : "Send Message →"}
               </button>
+              <div style={{ textAlign: "center", marginTop: 12, fontSize: 12, color: "#B0ADA4" }}>
+                Or email directly: <a href="mailto:tarunkumarz211286@gmail.com" style={{ color: G, fontWeight: 600, textDecoration: "none" }}>tarunkumarz211286@gmail.com</a>
+              </div>
             </div>
           </Reveal>
         </div>
